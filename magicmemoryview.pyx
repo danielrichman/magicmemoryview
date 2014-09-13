@@ -23,6 +23,24 @@ from cpython.buffer cimport PyBUF_SIMPLE, Py_buffer
 from cpython.buffer cimport PyObject_GetBuffer, PyBuffer_Release
 cdef extern int PyObject_AsReadBuffer(object, const void **, Py_ssize_t *)
 
+cimport mman
+
+MADV_NORMAL         = mman.MADV_NORMAL
+MADV_RANDOM         = mman.MADV_RANDOM
+MADV_SEQUENTIAL     = mman.MADV_SEQUENTIAL
+MADV_WILLNEED       = mman.MADV_WILLNEED
+MADV_DONTNEED       = mman.MADV_DONTNEED
+MADV_REMOVE         = mman.MADV_REMOVE
+MADV_DONTFORK       = mman.MADV_DONTFORK
+MADV_DOFORK         = mman.MADV_DOFORK
+MADV_HWPOISON       = mman.MADV_HWPOISON
+# MADV_SOFT_OFFLINE   = mman.MADV_SOFT_OFFLINE
+MADV_MERGEABLE      = mman.MADV_MERGEABLE
+MADV_UNMERGEABLE    = mman.MADV_UNMERGEABLE
+MADV_HUGEPAGE       = mman.MADV_HUGEPAGE
+MADV_NOHUGEPAGE     = mman.MADV_NOHUGEPAGE
+# MADV_DONTDUMP       = mman.MADV_DONTDUMP
+# MADV_DODUMP         = mman.MADV_DODUMP
 
 cdef class MagicMemoryView:
     IF PY2:
@@ -105,3 +123,9 @@ cdef class MagicMemoryView:
         view.format = self.format
         view.itemsize = self.itemsize
         view.ndim = self.ndim
+
+    def madvise(object self, int advice):
+        cdef int r
+        r = mman.madvise(self.buf, self.len, advice)
+        if r != 0:
+            raise OSError("madvise")
